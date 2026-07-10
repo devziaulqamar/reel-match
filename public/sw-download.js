@@ -11,7 +11,7 @@ const ALLOWED_HOSTS = new Set(["videos.pexels.com", "images.pexels.com"]);
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin || url.pathname !== "/vf-download") {
+  if (url.origin !== self.location.origin || url.pathname !== "/rm-download") {
     return; // not ours — let the network handle it
   }
 
