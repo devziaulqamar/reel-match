@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import "./ReelMatch.css";
 import VideoCard from "./components/VideoCard.jsx";
-import { Moon, Search, SlidersVertical, SquarePlay, Sun, X } from "lucide-react";
-import { MAX_KEYWORDS, DEFAULT_DOWNLOAD } from "./utils/video.js";
+import {
+  Moon,
+  RectangleHorizontal,
+  RectangleVertical,
+  Search,
+  SlidersVertical,
+  SquarePlay,
+  Sun,
+  X,
+} from "lucide-react";
+import { MAX_KEYWORDS, DOWNLOAD_TARGETS } from "./utils/video.js";
 
 function getInitialTheme() {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -20,6 +29,7 @@ export default function ReelMatch() {
   const [keywords, setKeywords] = useState([]);
   const [downloads, setDownloads] = useState(0);
   const [theme, setTheme] = useState(getInitialTheme);
+  const [orientation, setOrientation] = useState("portrait");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -101,9 +111,9 @@ export default function ReelMatch() {
             Find vertical clips for <span>every keyword</span>
           </h1>
           <p className="rm-sub">
-            Paste up to {MAX_KEYWORDS} keywords and get a matching portrait
-            video for each one. Preview instantly, pick a resolution, and
-            download in one click.
+            Paste up to {MAX_KEYWORDS} keywords and get a matching{" "}
+            {orientation} video for each one. Preview instantly, pick a
+            resolution, and download in one click.
           </p>
 
           <div className="rm-search-panel">
@@ -116,6 +126,28 @@ export default function ReelMatch() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
+            </div>
+            <div className="rm-orientation-toggle" role="group" aria-label="Video orientation">
+              <button
+                type="button"
+                className={`rm-orientation-btn ${
+                  orientation === "portrait" ? "is-active" : ""
+                }`}
+                onClick={() => setOrientation("portrait")}
+              >
+                <RectangleVertical size={14} />
+                Portrait
+              </button>
+              <button
+                type="button"
+                className={`rm-orientation-btn ${
+                  orientation === "landscape" ? "is-active" : ""
+                }`}
+                onClick={() => setOrientation("landscape")}
+              >
+                <RectangleHorizontal size={14} />
+                Landscape
+              </button>
             </div>
             <div className="rm-search-foot">
               <span
@@ -159,8 +191,9 @@ export default function ReelMatch() {
                 <h2>Results</h2>
                 <p>
                   Preview uses a lightweight file. Downloads default to{" "}
-                  {DEFAULT_DOWNLOAD.width} x {DEFAULT_DOWNLOAD.height} HD — change
-                  it per video below.
+                  {DOWNLOAD_TARGETS[orientation].width} x{" "}
+                  {DOWNLOAD_TARGETS[orientation].height} HD — change it per
+                  video below.
                 </p>
               </div>
               <div className="rm-stats">
@@ -196,6 +229,7 @@ export default function ReelMatch() {
                   key={kw}
                   keyword={kw}
                   index={i}
+                  orientation={orientation}
                   onDownloaded={() => setDownloads((d) => d + 1)}
                 />
               ))}
