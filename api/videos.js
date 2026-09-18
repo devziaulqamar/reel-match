@@ -8,15 +8,18 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { query, page = "1" } = req.query;
+  const { query, page = "1", orientation = "portrait" } = req.query;
   if (!query || Array.isArray(query)) {
     res.status(400).json({ error: "Missing query parameter" });
     return;
   }
+  const safeOrientation = ["portrait", "landscape", "square"].includes(orientation)
+    ? orientation
+    : "portrait";
 
   const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(
     query
-  )}&orientation=portrait&per_page=1&page=${encodeURIComponent(page)}`;
+  )}&orientation=${safeOrientation}&per_page=1&page=${encodeURIComponent(page)}`;
 
   try {
     const upstream = await fetch(url, { headers: { Authorization: apiKey } });

@@ -9,13 +9,14 @@ import {
   User,
 } from "lucide-react";
 import {
-  DEFAULT_DOWNLOAD,
+  DOWNLOAD_TARGETS,
   formatDuration,
   pickDefaultFile,
   qualityTier,
 } from "../utils/video.js";
 
-export default function VideoCard({ keyword, index, onDownloaded }) {
+export default function VideoCard({ keyword, index, orientation, onDownloaded }) {
+  const target = DOWNLOAD_TARGETS[orientation] || DOWNLOAD_TARGETS.portrait;
   const [page, setPage] = useState(1);
   const [video, setVideo] = useState(null);
   const [selectedFileId, setSelectedFileId] = useState(null);
@@ -31,7 +32,9 @@ export default function VideoCard({ keyword, index, onDownloaded }) {
     setError(null);
     try {
       const res = await fetch(
-        `/api/videos?query=${encodeURIComponent(keyword)}&page=${nextPage}`
+        `/api/videos?query=${encodeURIComponent(
+          keyword
+        )}&page=${nextPage}&orientation=${orientation}`
       );
       if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
@@ -43,7 +46,7 @@ export default function VideoCard({ keyword, index, onDownloaded }) {
         if (files.length === 0) throw new Error("No playable files");
         // smallest file for a fast preview
         const preview = files[files.length - 1];
-        const defaultFile = pickDefaultFile(files);
+        const defaultFile = pickDefaultFile(files, target);
         setVideo({
           id: v.id,
           duration: v.duration,
@@ -64,10 +67,11 @@ export default function VideoCard({ keyword, index, onDownloaded }) {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount, keyed per keyword
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount, keyed per keyword/orientation
+    setPage(1);
     fetchVideo(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword]);
+  }, [keyword, orientation]);
 
   const handleReplace = () => {
     const nextPage = page + 1;
@@ -128,7 +132,7 @@ export default function VideoCard({ keyword, index, onDownloaded }) {
         )}
       </header>
 
-      <div className="rm-media">
+      <div className={`rm-media ${orientation === "landscape" ? "is-landscape" : ""}`}>
         {loading && (
           <div className="rm-media-state">
             <span className="rm-spinner" />
@@ -168,8 +172,7 @@ export default function VideoCard({ keyword, index, onDownloaded }) {
               {video?.files.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.width} x {f.height} — {qualityTier(f)}
-                  {f.width === DEFAULT_DOWNLOAD.width &&
-                  f.height === DEFAULT_DOWNLOAD.height
+                  {f.width === target.width && f.height === target.height
                     ? " (default)"
                     : ""}
                 </option>

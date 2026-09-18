@@ -1,5 +1,9 @@
-// Default download target resolution (portrait HD)
-export const DEFAULT_DOWNLOAD = { width: 720, height: 1280 };
+// Default download target resolution per orientation (HD)
+export const DOWNLOAD_TARGETS = {
+  portrait: { width: 720, height: 1280 },
+  landscape: { width: 1280, height: 720 },
+};
+export const DEFAULT_DOWNLOAD = DOWNLOAD_TARGETS.portrait;
 export const MAX_KEYWORDS = 10;
 
 export function qualityTier(file) {
@@ -17,21 +21,17 @@ export function formatDuration(seconds) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-// Prefer the exact default resolution, otherwise the closest match to it.
-export function pickDefaultFile(files) {
+// Prefer the exact target resolution, otherwise the closest match to it.
+export function pickDefaultFile(files, target = DEFAULT_DOWNLOAD) {
   const exact = files.find(
-    (f) =>
-      f.width === DEFAULT_DOWNLOAD.width && f.height === DEFAULT_DOWNLOAD.height
+    (f) => f.width === target.width && f.height === target.height
   );
   if (exact) return exact;
 
   return files.reduce((best, f) => {
-    const score =
-      Math.abs(f.width - DEFAULT_DOWNLOAD.width) +
-      Math.abs(f.height - DEFAULT_DOWNLOAD.height);
+    const score = Math.abs(f.width - target.width) + Math.abs(f.height - target.height);
     const bestScore =
-      Math.abs(best.width - DEFAULT_DOWNLOAD.width) +
-      Math.abs(best.height - DEFAULT_DOWNLOAD.height);
+      Math.abs(best.width - target.width) + Math.abs(best.height - target.height);
     return score < bestScore ? f : best;
   }, files[0]);
 }
